@@ -1,0 +1,96 @@
+<odoo>
+    <template id="product_price_discounted" inherit_id="website_sale.product_price" name="Product Price with Discount">
+<!--        This template is used to display the discounted price on product page-->
+        <xpath expr="//span[@class='oe_price']" position="replace">
+            <span style="white-space: nowrap;"
+                  t-out="product['discounted_price']"
+                  t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+        </xpath>
+        <xpath expr="//span[@itemprop='listPrice']" position="replace">
+            <span t-attf-class="text-danger ms-1 h5 {{'' if product.discount_percentage > 0 else 'd-none'}}"
+                  style="text-decoration: line-through; white-space: nowrap;"
+                  t-esc="product['list_price']"
+                  t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"
+            />
+        </xpath>
+    </template>
+
+    <template id="product_products_item_inherit" inherit_id="website_sale.products_item"
+              name="Product Item Display Modification">
+        <!-- This template is used to display to display the discounted price in the product listing page -->
+        <xpath expr="//div[hasclass('product_price')]" position="replace">
+            <div class="product_price" itemprop="offers" itemscope="itemscope" itemtype="http://schema.org/Offer">
+                <t t-if="product.discount_percentage > 0">
+                    <span class="original-price" style="text-decoration: line-through; color: red;">
+                        <t t-if="'base_price' in template_price_vals and (template_price_vals['base_price'] &gt; template_price_vals['price_reduce']) and (template_price_vals['price_reduce'] or not website.prevent_zero_price_sale)">
+                            <del t-attf-class="text-muted me-1 h6 mb-0" style="white-space: nowrap;">
+                                <em class="small" t-esc="template_price_vals['base_price']"
+                                    t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                            </del>
+                        </t>
+                        <span class="h6 mb-0"
+                              t-if="template_price_vals['price_reduce'] or not website.prevent_zero_price_sale"
+                              t-esc="template_price_vals['price_reduce']"
+                              t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                        <span class="h6 mb-0"
+                              t-elif="any(ptav.price_extra for ptav in product.attribute_line_ids.product_template_value_ids)">
+                            &amp;nbsp;
+                        </span>
+                        <span class="h6 mb-0" t-else="" t-field="website.prevent_zero_price_sale_text"/>
+                        <span itemprop="price" style="display:none;" t-esc="template_price_vals['price_reduce']"/>
+                        <span itemprop="priceCurrency" style="display:none;" t-esc="website.currency_id.name"/>
+                    </span>&amp;nbsp;
+                    <span class="h6 mb-0" t-if="product.discounted_price or not website.prevent_zero_price_sale"
+                          t-esc="product.discounted_price"
+                          t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                </t>
+                <t t-if="product.discount_percentage == 0">
+                    <span class="regular-price">
+                        <t t-if="'base_price' in template_price_vals and (template_price_vals['base_price'] &gt; template_price_vals['price_reduce']) and (template_price_vals['price_reduce'] or not website.prevent_zero_price_sale)">
+                            <del t-attf-class="text-muted me-1 h6 mb-0" style="white-space: nowrap;">
+                                <em class="small" t-esc="template_price_vals['base_price']"
+                                    t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                            </del>
+                        </t>
+                        <span class="h6 mb-0"
+                              t-if="template_price_vals['price_reduce'] or not website.prevent_zero_price_sale"
+                              t-esc="template_price_vals['price_reduce']"
+                              t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                        <span class="h6 mb-0"
+                              t-elif="any(ptav.price_extra for ptav in product.attribute_line_ids.product_template_value_ids)">
+                            &amp;nbsp;
+                        </span>
+                        <span class="h6 mb-0" t-else="" t-field="website.prevent_zero_price_sale_text"/>
+                        <span itemprop="price" style="display:none;" t-esc="template_price_vals['price_reduce']"/>
+                        <span itemprop="priceCurrency" style="display:none;" t-esc="website.currency_id.name"/>
+                    </span>
+                </t>
+            </div>
+
+        </xpath>
+
+    </template>
+
+    <template id="website_sale_checkout_layout_inherit" inherit_id="website_sale.checkout_layout">
+<!--        This template is used to display discounted price on checkout page-->
+        <xpath expr="//table[@id='cart_products']/tbody/tr/td[2]" position="replace">
+
+            <td>
+                <t t-set="line" t-value="line.product_id"/>
+                <t t-if="line.discount_percentage > 0">
+                    <span class="original-price" style="text-decoration: line-through; color: red;">
+                        <t t-esc="line.list_price"/>
+                    </span>
+                    <span class="discounted-price" style="font-weight: bold;">
+                        <t t-esc="line.discounted_price"/>
+                    </span>
+                </t>
+                <t t-else="">
+                    <span class="regular-price">
+                        <t t-esc="line.list_price"/>
+                    </span>
+                </t>
+            </td>
+        </xpath>
+    </template>
+</odoo>

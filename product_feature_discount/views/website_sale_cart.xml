@@ -1,0 +1,40 @@
+<odoo>
+    <template id="cart_lines_discounted" inherit_id="website_sale.cart_lines" name="Cart Lines with Discount">
+<!--        This template is used to display discounted price on cart lines-->
+        <xpath expr="//div[@name='website_sale_cart_line_price']" position="replace">
+            <t t-if="line.product_id.discount_percentage > 0">
+                <span class="original_price" style="text-decoration: line-through;">
+                    <t t-esc="line.product_id.list_price"/>
+                </span>
+                <span class="discounted_price">
+                    <t t-esc="line.product_id.discounted_price"/>
+                </span>
+            </t>
+            <t t-else="">
+                <span class="oe_currency_value">
+                    <t t-esc="line.product_id.list_price"/>
+                </span>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="applied_discount" inherit_id="website_sale.total" name="Discount Applied">
+        <!-- This template is used to display applied discount on cart & checkout page. -->
+        <xpath expr="//div[@id='cart_total']//table/tr" position="after">
+            <t t-set="discount_amt" t-value="sum(website_sale_order.order_line.mapped('discount_amt'))"/>
+            <tr t-if="discount_amt">
+                <td id="cart_total_discount"
+                    class="border-0 pb-2 ps-0 pt-0 text-start text-muted"
+                    colspan="2">
+                    Discount
+                </td>
+                <td class="text-end border-0 pb-2 pe-0 pt-0">
+                    <span t-esc="discount_amt"
+                          class="monetary_field"
+                          style="white-space: nowrap;"
+                          t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
+                </td>
+            </tr>
+        </xpath>
+    </template>
+</odoo>
